@@ -1,9 +1,12 @@
-###################################################################################
+#################################################################################
 ### Empirical Methods II Spring 2022                                            ###
 ### Homework I: Replication of Babcock, Recalde, Vesterlund and Weingart (2017) ###
 ###                                                                             ###
 ### student: Yong Feng                                                          ###
 ### Date of this version: 2022-01-26                                            ###
+###                                                                             ###
+### To export tables, run line by line. If select all and run,                  ###
+### code syntax will be included in the HTML page.                              ###
 ###################################################################################
 
 ### load packages and install if not found -------------------------------------------------
@@ -47,23 +50,51 @@ experiment_3 <- read_dta(str_c(data_path, "/BabcockRecaldeVesterlundWeingart_201
 ### table replication -------------------------------------------------------
 ### Following the paper, I put p values in the parentheses
 
-### table 2:
+### table 2: probit model and calculate average marginal effects
+
+### clustered standard error
 ###   - first column
-tab2_col1 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1), atmean = FALSE, clustervar1 = "unique_subjectid")
+tab2_col1_cluster <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1), atmean = FALSE, clustervar1 = "unique_subjectid")
 ###   - second column
-tab2_col2 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period <= 5), atmean = FALSE, clustervar1 = "unique_subjectid")
+tab2_col2_cluster <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period <= 5), atmean = FALSE, clustervar1 = "unique_subjectid")
 ###   - third column
-tab2_col3 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period >= 6), atmean = FALSE, clustervar1 = "unique_subjectid")
-### generate LaTeX table code and save to txt file
-### use \input{...} to put tables into LaTeX file
+tab2_col3_cluster <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period >= 6), atmean = FALSE, clustervar1 = "unique_subjectid")
+### heteroskedasticity standard error
+###   - first column
+tab2_col1_robust <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1), atmean = FALSE, robust = TRUE)
+###   - second column
+tab2_col2_robust <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period <= 5), atmean = FALSE, robust = TRUE)
+###   - third column
+tab2_col3_robust <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 1, period >= 6), atmean = FALSE, robust = TRUE)
+### generate HTML table
+### I use some extra HTML language to format the table
 sink(str_c(output_path, "/feng_yong_hw1_tab2.html"))
-htmlreg(list(tab2_col1, tab2_col2, tab2_col3), stars = numeric(0), 
+cat("<div align='center'>")
+cat("<em>Clustered Standard Error</em>")
+htmlreg(list(tab2_col1_cluster, tab2_col2_cluster, tab2_col3_cluster), stars = numeric(0),
         custom.header = list("All rounds" = 1, "Rounds 1-5" = 2, "Rounds 6-10" = 3),
         custom.model.names = c("(1)", "(2)", "(3)"),
         custom.coef.names = c("Female", "Round"), digits = 3,
         custom.gof.names = c("Observations"),
-        override.se = list(tab2_col1$mfxest[, 4], tab2_col2$mfxest[, 4], tab2_col3$mfxest[, 4]),
-        caption = "TABLE2—PROBABILITY OF INVESTING (Probit): EXPERIMENT 1",
+        override.se = list(tab2_col1_cluster$mfxest[, 4], tab2_col2_cluster$mfxest[, 4], tab2_col3_cluster$mfxest[, 4]),
+        caption = "TABLE 2—PROBABILITY OF INVESTING (Probit): EXPERIMENT 1",
+        caption.above = TRUE,
+        label = "table2",
+        booktabs = TRUE,
+        include.loglik = FALSE,
+        include.deviance = FALSE,
+        include.aic = FALSE,
+        include.bic = FALSE)
+cat("<br />")
+cat("<hr />")
+cat("<em>Heteroskedasticity Standard Error</em>")
+htmlreg(list(tab2_col1_robust, tab2_col2_robust, tab2_col3_robust), stars = numeric(0),
+        custom.header = list("All rounds" = 1, "Rounds 1-5" = 2, "Rounds 6-10" = 3),
+        custom.model.names = c("(1)", "(2)", "(3)"),
+        custom.coef.names = c("Female", "Round"), digits = 3,
+        custom.gof.names = c("Observations"),
+        override.se = list(tab2_col1_robust$mfxest[, 4], tab2_col2_robust$mfxest[, 4], tab2_col3_robust$mfxest[, 4]),
+        caption = "TABLE 2—PROBABILITY OF INVESTING (Probit): EXPERIMENT 1",
         caption.above = TRUE,
         label = "table2",
         booktabs = TRUE,
@@ -73,22 +104,22 @@ htmlreg(list(tab2_col1, tab2_col2, tab2_col3), stars = numeric(0),
         include.bic = FALSE)
 sink()
 
-### table 3:
+### table 3:probit model and calculate average marginal effects
 ###   - first column
 tab3_col1 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 2), atmean = FALSE, clustervar1 = "unique_subjectid")
 ###   - second column
 tab3_col2 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 2, period <= 5), atmean = FALSE, clustervar1 = "unique_subjectid")
 ###   - third column
 tab3_col3 <- probitmfx(decision ~ female + period, data = filter(experiments_1_2, experiment == 2, period >= 6), atmean = FALSE, clustervar1 = "unique_subjectid")
-### generate LaTeX table code and save to txt file
-sink(str_c(output_path, "/feng_yong_hw1_tab3.html"))
+### generate HTML table
 htmlreg(list(tab3_col1, tab3_col2, tab3_col3), stars = numeric(0), 
+        file = str_c(output_path, "/feng_yong_hw1_tab3.html"),
         custom.header = list("All rounds" = 1, "Rounds 1-5" = 2, "Rounds 6-10" = 3),
         custom.model.names = c("(1)", "(2)", "(3)"),
         custom.coef.names = c("Female", "Round"), digits = 3,
         custom.gof.names = c("Observations"),
         override.se = list(tab3_col1$mfxest[, 4], tab3_col2$mfxest[, 4], tab3_col3$mfxest[, 4]),
-        caption = "TABLE3—PROBABILITY OF INVESTING (<i>Probit</i>): EXPERIMENT 2",
+        caption = "TABLE 3—PROBABILITY OF INVESTING (<i>Probit</i>): EXPERIMENT 2",
         caption.above = TRUE,
         label = "table3",
         booktabs = TRUE,
@@ -97,7 +128,6 @@ htmlreg(list(tab3_col1, tab3_col2, tab3_col3), stars = numeric(0),
         include.aic = FALSE,
         include.bic = FALSE,
         use.packages = FALSE)
-sink()
 
 ### table 4: requests received via the strategy method (ols): experiment 3
 ###   - first column
@@ -134,10 +164,9 @@ tab4_col6 <- experiment_3 %>%
   group_by(unique_subjectid, session_id, female, non_caucasian, n_com_by_session) %>%
   summarise(total_requests = sum(n_asked)) %>%
   lm(data = ., total_requests ~ female + non_caucasian + n_com_by_session)
-### generate table
-sink(str_c(output_path, "/feng_yong_hw1_tab4.html"))
+### generate HTML table
 htmlreg(list(tab4_col1, tab4_col2, tab4_col3, tab4_col4, tab4_col5, tab4_col6),
-        stars = numeric(0),
+        stars = numeric(0), file = str_c(output_path, "/feng_yong_hw1_tab4.html"),
         custom.header = list("Rounds 1-10" = 1:2, "Rounds 1-5" = 3:4, "Rounds 6-10" = 5:6),
         custom.model.names = c("(1)", "(2)", "(3)", "(4)", "(5)", "(6)"),
         custom.coef.names = c("Constant", "Female", "Non-Caucasian", "N communicate with in session"),
@@ -149,12 +178,11 @@ htmlreg(list(tab4_col1, tab4_col2, tab4_col3, tab4_col4, tab4_col5, tab4_col6),
                            coeftest(tab4_col4, vcov. = vcovHC(tab4_col4, cluster = "session_id"))[, 4],
                            coeftest(tab4_col5, vcov. = vcovHC(tab4_col5, cluster = "session_id"))[, 4],
                            coeftest(tab4_col6, vcov. = vcovHC(tab4_col6, cluster = "session_id"))[, 4]),
-        caption = "TABLE4—REQUESTS RECEIVED VIA THE STRATEGY METHOD (OLS): EXPERIMENT 3",
+        caption = "TABLE 4—REQUESTS RECEIVED VIA THE STRATEGY METHOD (OLS): EXPERIMENT 3",
         caption.above = TRUE,
         include.rsquared = FALSE,
         include.adjrs = FALSE,
         custom.gof.names = "Observations")
-sink()
 
 
 # figures replication -----------------------------------------------------
@@ -363,13 +391,16 @@ bal_tab_exp_3 <- experiment_3 %>%
   rename(covariates = variables1, male = Media_control1, female = Media_trat1, p_value = p_value1) %>%
   as.data.frame()
 
+### save the table
 sink(str_c(output_path, "/feng_yong_hw1_balance.html"))
-cat("<div align='center'>")
+cat("<div align='center' style='font-family: \'Times New Roman\''>")
 stargazer(bal_tab_exp_1, type = "html", summary = FALSE, title = "BALANCE TABLE: EXPERIMENT 1")
 cat("<br />")
+cat("<hr />")
 cat("<br />")
 stargazer(bal_tab_exp_2, type = "html", summary = FALSE, title = "BALANCE TABLE: EXPERIMENT 2")
 cat("<br />")
+cat("<hr />")
 cat("<br />")
 stargazer(bal_tab_exp_3, type = "html", summary = FALSE, title = "BALANCE TABLE: EXPERIMENT 3")
 cat("</div>")
