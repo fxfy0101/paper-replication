@@ -12,4 +12,4 @@ Replicate and reestiamate table 1 and figure 1-3 from [Lee, Moretti, and Butler 
 
 ## Assignment 3
 
-Replicate
+Replicate fixed effects paper
